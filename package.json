@@ -1,0 +1,20 @@
+{
+  "name": "space-panda-contracts",
+  "version": "1.0.0",
+  "description": "This is the smart contracts of Space Panda NFT & gaming",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com-pandadadig:Space-Pandas/space-panda-contracts.git"
+  },
+  "keywords": [
+    "NFT",
+    "SpacePanda",
+    "BSC"
+  ],
+  "author": "pandadadig@gmail.com",
+  "license": "ISC"
+}
