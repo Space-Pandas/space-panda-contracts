@@ -65,6 +65,8 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
 
     uint256 public constant NAME_CHANGE_PRICE = 1000 * (10 ** 9);
 
+    uint256 public constant MAX_SPECIAL_NFT_ROUND = 3;
+
     // index [0, 200) for airdrop
     uint256 public constant MAX_AIRDROP_NFT_SUPPLY = 200;
 
@@ -72,7 +74,7 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
     uint256 public constant MAX_COMMON_NFT_SUPPLY = 46120;
 
     // index [46520, 47618) for special edition
-    uint256 public constant MAX_SPECIAL_NFT_SUPPLY = 366 * 3;
+    uint256 public constant MAX_SPECIAL_NFT_SUPPLY = 366 * MAX_SPECIAL_NFT_ROUND;
 
     // index [47618, 47700) reserved for community grants
     uint256 public constant MAX_COMMUNITY_RESERVED = 82;
@@ -255,12 +257,16 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
     }
 
     /**
-     * @dev Gets current SpacePanda Price
+     * @dev Gets special NFT price
+     */
+    function getSpecialNftPrice() public view returns (uint256) {
+        return 50 * (10 ** 18);
+    }
+
+    /**
+     * @dev Gets current common NFT price
      */
     function getCommonNftPrice() public view returns (uint256) {
-        require(_commonNftStart, "Blind box has not started");
-        require(_commonNftCount < MAX_COMMON_NFT_SUPPLY, "Blind boxes common edition sold out");
-
         uint currentSupply = _commonNftCount;
         // the following add operation should never overflow
         if (currentSupply < 30000) {
@@ -305,16 +311,25 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
     }
 
     function startCommonBlinkBox() public onlyOwner {
-        require(!_commonNftStart, "Blind box has started");
+        require(!_commonNftStart, "Common blind box has started");
         _commonNftStart = true;
+    }
+
+    function startSpecialBlinkBox() public onlyOwner {
+        require(!_specialNftStart, "Special blind box has started");
+        _specialNftStart = true;
+    }
+
+    function startNextSpecialNft() public onlyOwner {
+        require(_currentSpecialNftRound < MAX_SPECIAL_NFT_ROUND, "Special nft ended");
+        _currentSpecialNftRound++;
     }
 
     /**
     * @dev Airdrop Pandas
     */
-    function mintAirDropNFT(address to) public onlyOwner {
+    function mintAirDropNft(address to) public onlyOwner {
         require(_airDropNftCount < MAX_AIRDROP_NFT_SUPPLY, "Airdrop ended");
-        require(totalSupply() < MAX_TOTAL_NFT_SUPPLY, "All nft sold out");
 
         _safeMint(to, _nftIndex);
         _airDropNftCount++;
@@ -322,10 +337,39 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
     }
 
     /**
-    * @dev Mints Pandas
+    * @dev Mint Auction Pandas
     */
-    function mintCommonNFT(uint256 numberOfBoxes) public payable {
-        require(_commonNftCount < MAX_COMMON_NFT_SUPPLY, "Blind boxes sold out");
+    function mintAuctionNft(address to) public {
+        require(_specialNftCount < MAX_SPECIAL_NFT_SUPPLY, "Exceeds max supply");
+        require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
+
+        _safeMint(to, _nftIndex);
+        _specialNftCount++;
+        _nftIndex++;
+    }
+
+    /**
+    * @dev Mints Special Pandas
+    */
+    function mintSpecialNft(uint256 numberOfBoxes) public payable {
+        require(_specialNftStart, "Special blind box has not started");
+        require(numberOfBoxes > 0, "Number of blind boxes cannot be 0");
+        require(numberOfBoxes <= 10, "You may not open more than 10 blind boxes at once");
+        require(_specialNftCount.add(numberOfBoxes) <= 366 * (_currentSpecialNftRound - 1) + 240, "Exceeds max supply");
+        require(getSpecialNftPrice().mul(numberOfBoxes) == msg.value, "Price sent is not correct");
+
+        for (uint i = 0; i < numberOfBoxes; i++) {
+            _safeMint(msg.sender, _nftIndex);
+            _nftIndex++;
+        }
+        _specialNftCount = _specialNftCount + numberOfBoxes;
+    }
+
+    /**
+    * @dev Mints Common Pandas
+    */
+    function mintCommonNft(uint256 numberOfBoxes) public payable {
+        require(_commonNftStart, "Common blind box has not started");
         require(numberOfBoxes > 0, "Number of blind boxes cannot be 0");
         require(numberOfBoxes <= 50, "You may not open more than 50 blind boxes at once");
         require(_commonNftCount.add(numberOfBoxes) <= MAX_COMMON_NFT_SUPPLY, "Exceeds max supply");
