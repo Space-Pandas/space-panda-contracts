@@ -8,4 +8,20 @@ contract("space panda test", async accounts => {
         assert.equal(name, "SpacePanda");
         assert.equal(symbol, "SP");
     });
+
+    it("should deploy successfully", async () => {
+        const panda = await SpacePanda.deployed();
+        await panda.setSptAddress("0x0000000000000000000000000000000000000001");
+        await panda.setSptAddress("0x0000000000000000000000000000000000000002");
+    });
+
+    /**it("should mint successfully", async () => {
+        const panda = await SpacePanda.deployed();
+        for(let i=0; i<200; i++) {
+            await panda.airDropNFT(accounts[1])
+        }
+        await panda.airDropNFT(accounts[1])
+        const balance = await panda.balanceOf(accounts[1]);
+        console.log(accounts[1], balance.toString())
+    });**/
 });

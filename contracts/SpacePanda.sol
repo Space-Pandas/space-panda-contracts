@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.7.0;
 
 import "./ERC165/IERC165.sol";
@@ -11,6 +13,7 @@ import "./utils/Context.sol";
 import "./utils/Ownable.sol";
 import "./IERC20.sol";
 import "./IERC721Enumerable.sol";
+import "./access/AccessControl.sol";
 
 /**
  * @title ERC-721 Non-Fungible Token Standard, optional metadata extension
@@ -51,7 +54,7 @@ interface IERC721Receiver {
  * @title SpacePanda contract
  * @dev Extends ERC721 Non-Fungible Token Standard basic implementation
  */
-contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, IERC721Metadata {
+contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessControl, IERC721Metadata {
     using SafeMath for uint256;
     using Address for address;
     using EnumerableSet for EnumerableSet.UintSet;
@@ -62,11 +65,38 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, IERC721Metad
 
     uint256 public constant NAME_CHANGE_PRICE = 1000 * (10 ** 9);
 
-    uint256 public constant MAX_COMMON_NFT_SUPPLY = 46320;
-
+    // index [0, 200) for airdrop
     uint256 public constant MAX_AIRDROP_NFT_SUPPLY = 200;
 
-    bool public COMMON_NFT_START = false;
+    // index [200, 46520) for common edition
+    uint256 public constant MAX_COMMON_NFT_SUPPLY = 46320;
+
+    // index [46520, 47618) for special edition
+    uint256 public constant MAX_SPECIAL_NFT_SUPPLY = 366 * 3;
+
+    // index [47618, 47700) reserved for community grants
+    uint256 public constant MAX_COMMUNITY_RESERVED = 82;
+
+    // airdrop + common panda + special panda
+    uint256 public constant MAX_TOTAL_NFT = 47700;
+
+    // minter role for auction contract, game contract
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
+    bool private _commonNftStart = false;
+
+    bool private _specialNftStart = false;
+
+    // total three rounds for special edition auction
+    uint256 private _currentSpecialNftRound = 1;
+
+    uint256 private _pandaIndex = 0;
+
+    uint256 private airDropNftCount = 0;
+
+    uint256 private commonNftCount = 0;
+
+    uint256 private specialNftCount = 0;
 
     // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
     // which can be also obtained as `IERC721Receiver(0).onERC721Received.selector`
@@ -96,7 +126,7 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, IERC721Metad
     // Token symbol
     string private _symbol;
 
-    // Space Panda token address
+    // Space Panda token address, should only be set once
     address private _sptAddress;
 
     /*
@@ -138,15 +168,23 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, IERC721Metad
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
      */
-    constructor (string memory name, string memory symbol, address sptAddress) {
+    constructor (string memory name, string memory symbol) {
         _name = name;
         _symbol = symbol;
-        _sptAddress = sptAddress;
+
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _setupRole(MINTER_ROLE, _msgSender());
 
         // register the supported interfaces to conform to ERC721 via ERC165
         _registerInterface(_INTERFACE_ID_ERC721);
         _registerInterface(_INTERFACE_ID_ERC721_METADATA);
         _registerInterface(_INTERFACE_ID_ERC721_ENUMERABLE);
+    }
+
+    function setSptAddress(address sptAddress) public onlyOwner {
+        require(sptAddress != address(0), "Spt token for the zero address");
+        require(_sptAddress == address(0), "Spt token should only be set once");
+        _sptAddress = sptAddress;
     }
 
     /**
@@ -219,8 +257,8 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, IERC721Metad
     /**
      * @dev Gets current SpacePanda Price
      */
-    function getNFTPrice() public view returns (uint256) {
-        require(COMMON_NFT_START, "Blind box has not started");
+    function getNftPrice() public view returns (uint256) {
+        require(_commonNftStart, "Blind box has not started");
         require(totalSupply() >= MAX_AIRDROP_NFT_SUPPLY, "Wait after airdrop finished");
         require(totalSupply() < MAX_COMMON_NFT_SUPPLY, "Blind boxes sold out");
 
@@ -268,14 +306,14 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, IERC721Metad
     }
 
     function startCommonBlinkBox() public onlyOwner {
-        require(!COMMON_NFT_START, "Blind box has started");
-        COMMON_NFT_START = true;
+        require(!_commonNftStart, "Blind box has started");
+        _commonNftStart = true;
     }
 
     /**
     * @dev Airdrop Pandas
     */
-    function airDropNFT(address to) public onlyOwner {
+    function mintAirDropNFT(address to) public onlyOwner {
         require(totalSupply() < MAX_AIRDROP_NFT_SUPPLY, "Airdrop ended");
 
         uint mintIndex = totalSupply();
@@ -291,7 +329,7 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, IERC721Metad
         require(numberOfBoxes <= 50, "You may not open more than 50 blind boxes at once");
         require(totalSupply().add(numberOfBoxes) <= MAX_COMMON_NFT_SUPPLY, "Exceeds max supply");
         require(validateBatch(numberOfBoxes), "Batch is not correct");
-        require(getNFTPrice().mul(numberOfBoxes) == msg.value, "Bnb value sent is not correct");
+        require(getNftPrice().mul(numberOfBoxes) == msg.value, "Bnb value sent is not correct");
 
         for (uint i = 0; i < numberOfBoxes; i++) {
             uint mintIndex = totalSupply();
