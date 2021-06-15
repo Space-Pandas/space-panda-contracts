@@ -69,7 +69,7 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
     uint256 public constant MAX_AIRDROP_NFT_SUPPLY = 200;
 
     // index [200, 46520) for common edition
-    uint256 public constant MAX_COMMON_NFT_SUPPLY = 46320;
+    uint256 public constant MAX_COMMON_NFT_SUPPLY = 46120;
 
     // index [46520, 47618) for special edition
     uint256 public constant MAX_SPECIAL_NFT_SUPPLY = 366 * 3;
@@ -78,7 +78,7 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
     uint256 public constant MAX_COMMUNITY_RESERVED = 82;
 
     // airdrop + common panda + special panda
-    uint256 public constant MAX_TOTAL_NFT = 47700;
+    uint256 public constant MAX_TOTAL_NFT_SUPPLY = 47500;
 
     // minter role for auction contract, game contract
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -90,13 +90,13 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
     // total three rounds for special edition auction
     uint256 private _currentSpecialNftRound = 1;
 
-    uint256 private _pandaIndex = 0;
+    uint256 private _nftIndex = 0;
 
-    uint256 private airDropNftCount = 0;
+    uint256 private _airDropNftCount = 0;
 
-    uint256 private commonNftCount = 0;
+    uint256 private _commonNftCount = 0;
 
-    uint256 private specialNftCount = 0;
+    uint256 private _specialNftCount = 0;
 
     // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
     // which can be also obtained as `IERC721Receiver(0).onERC721Received.selector`
@@ -257,48 +257,47 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
     /**
      * @dev Gets current SpacePanda Price
      */
-    function getNftPrice() public view returns (uint256) {
+    function getCommonNftPrice() public view returns (uint256) {
         require(_commonNftStart, "Blind box has not started");
-        require(totalSupply() >= MAX_AIRDROP_NFT_SUPPLY, "Wait after airdrop finished");
-        require(totalSupply() < MAX_COMMON_NFT_SUPPLY, "Blind boxes sold out");
+        require(_commonNftCount < MAX_COMMON_NFT_SUPPLY, "Blind boxes common edition sold out");
 
-        uint currentSupply = totalSupply();
+        uint currentSupply = _commonNftCount;
         // the following add operation should never overflow
-        if (currentSupply < 30000 + MAX_AIRDROP_NFT_SUPPLY) {
-            return 5 * (10 ** 16);  //  0 - 29999 0.05 BNB, total 30000
-        } else if (currentSupply < 42000 + MAX_AIRDROP_NFT_SUPPLY) {
-            return 9 * (10 ** 16);  //  30000 - 41999 0.09 BNB, total 12000
-        } else if (currentSupply < 45000 + MAX_AIRDROP_NFT_SUPPLY) {
-            return 18 * (10 ** 16);  // 42000 - 44999 0.18 BNB, total 3000
-        } else if (currentSupply < 45800 + MAX_AIRDROP_NFT_SUPPLY) {
-            return 4 * (10 ** 17);  //  45000 - 45799 0.4 BNB, total 800
-        } else if (currentSupply < 46050 + MAX_AIRDROP_NFT_SUPPLY) {
-            return 12 * (10 ** 17);  // 45800 - 46049 1.2 BNB, total 250
-        } else if (currentSupply < 46110 + MAX_AIRDROP_NFT_SUPPLY) {
-            return 5 * (10 ** 18);  //  46050 - 46109 5 BNB
+        if (currentSupply < 30000) {
+            return 8 * (10 ** 16);  //  0 - 29999 0.08 BNB, total 30000
+        } else if (currentSupply < 42000) {
+            return 12 * (10 ** 16);  //  30000 - 41999 0.12 BNB, total 12000
+        } else if (currentSupply < 45000) {
+            return 25 * (10 ** 16);  // 42000 - 44999 0.25 BNB, total 3000
+        } else if (currentSupply < 45800) {
+            return 6 * (10 ** 17);  //  45000 - 45799 0.6 BNB, total 800
+        } else if (currentSupply < 46050) {
+            return 18 * (10 ** 17);  // 45800 - 46049 1.8 BNB, total 250
+        } else if (currentSupply < 46110) {
+            return 8 * (10 ** 18);  //  46050 - 46109 8 BNB
         } else {
-            return 30 * (10 ** 18);  // 46109 - 46120 30 BNB
+            return 50 * (10 ** 18);  // 46109 - 46120 50 BNB
         }
     }
 
-    function validateBatch(uint256 amount) public view returns (bool) {
+    function validateCommonNftBatch(uint256 amount) public view returns (bool) {
         if (amount == 1) {
             return true;
         }
-        uint fromPosition = totalSupply();
+        uint fromPosition = _commonNftCount;
         uint toPosition = fromPosition.add(amount);
         // the following add operation should never overflow
-        if (fromPosition < 30000 + MAX_AIRDROP_NFT_SUPPLY && toPosition < 30000 + MAX_AIRDROP_NFT_SUPPLY) {
+        if (fromPosition < 30000 && toPosition < 30000) {
             return true;
-        } else if (fromPosition < 42000 + MAX_AIRDROP_NFT_SUPPLY && toPosition < 42000 + MAX_AIRDROP_NFT_SUPPLY) {
+        } else if (fromPosition < 42000 && toPosition < 42000) {
             return true;
-        } else if (fromPosition < 45000 + MAX_AIRDROP_NFT_SUPPLY && toPosition < 45000 + MAX_AIRDROP_NFT_SUPPLY) {
+        } else if (fromPosition < 45000 && toPosition < 45000) {
             return true;
-        } else if (fromPosition < 45800 + MAX_AIRDROP_NFT_SUPPLY && toPosition < 45800 + MAX_AIRDROP_NFT_SUPPLY) {
+        } else if (fromPosition < 45800 && toPosition < 45800) {
             return true;
-        } else if (fromPosition < 46050 + MAX_AIRDROP_NFT_SUPPLY && toPosition < 46050 + MAX_AIRDROP_NFT_SUPPLY) {
+        } else if (fromPosition < 46050 && toPosition < 46050) {
             return true;
-        } else if (fromPosition < 46110 + MAX_AIRDROP_NFT_SUPPLY && toPosition < 46110 + MAX_AIRDROP_NFT_SUPPLY) {
+        } else if (fromPosition < 46110 && toPosition < 46110) {
             return true;
         }
         // last 10 boxes not allowed for batch mint
@@ -314,27 +313,30 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
     * @dev Airdrop Pandas
     */
     function mintAirDropNFT(address to) public onlyOwner {
-        require(totalSupply() < MAX_AIRDROP_NFT_SUPPLY, "Airdrop ended");
+        require(_airDropNftCount < MAX_AIRDROP_NFT_SUPPLY, "Airdrop ended");
+        require(totalSupply() < MAX_TOTAL_NFT_SUPPLY, "All nft sold out");
 
-        uint mintIndex = totalSupply();
-        _safeMint(to, mintIndex);
+        _safeMint(to, _nftIndex);
+        _airDropNftCount++;
+        _nftIndex++;
     }
 
     /**
     * @dev Mints Pandas
     */
-    function mintNFT(uint256 numberOfBoxes) public payable {
-        require(totalSupply() < MAX_COMMON_NFT_SUPPLY, "Blind boxes sold out");
+    function mintCommonNFT(uint256 numberOfBoxes) public payable {
+        require(_commonNftCount < MAX_COMMON_NFT_SUPPLY, "Blind boxes sold out");
         require(numberOfBoxes > 0, "Number of blind boxes cannot be 0");
         require(numberOfBoxes <= 50, "You may not open more than 50 blind boxes at once");
-        require(totalSupply().add(numberOfBoxes) <= MAX_COMMON_NFT_SUPPLY, "Exceeds max supply");
-        require(validateBatch(numberOfBoxes), "Batch is not correct");
-        require(getNftPrice().mul(numberOfBoxes) == msg.value, "Bnb value sent is not correct");
+        require(_commonNftCount.add(numberOfBoxes) <= MAX_COMMON_NFT_SUPPLY, "Exceeds max supply");
+        require(validateCommonNftBatch(numberOfBoxes), "Batch is not correct");
+        require(getCommonNftPrice().mul(numberOfBoxes) == msg.value, "Price sent is not correct");
 
         for (uint i = 0; i < numberOfBoxes; i++) {
-            uint mintIndex = totalSupply();
-            _safeMint(msg.sender, mintIndex);
+            _safeMint(msg.sender, _nftIndex);
+            _nftIndex++;
         }
+        _commonNftCount = _commonNftCount + numberOfBoxes;
     }
 
     /**
