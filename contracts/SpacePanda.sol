@@ -99,8 +99,6 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, IERC721Metad
     // Space Panda token address
     address private _sptAddress;
 
-    uint private unlocked = 1;
-
     /*
      *     bytes4(keccak256('balanceOf(address)')) == 0x70a08231
      *     bytes4(keccak256('ownerOf(uint256)')) == 0x6352211e
@@ -149,13 +147,6 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, IERC721Metad
         _registerInterface(_INTERFACE_ID_ERC721);
         _registerInterface(_INTERFACE_ID_ERC721_METADATA);
         _registerInterface(_INTERFACE_ID_ERC721_ENUMERABLE);
-    }
-
-    modifier lock() {
-        require(unlocked == 1, 'SpacePanda: LOCKED');
-        unlocked = 0;
-        _;
-        unlocked = 1;
     }
 
     /**
