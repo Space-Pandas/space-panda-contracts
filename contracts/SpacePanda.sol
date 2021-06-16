@@ -383,6 +383,11 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
         _commonNftCount = _commonNftCount + numberOfBoxes;
     }
 
+    function burn(uint256 tokenId) public virtual {
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "ERC721Burnable: caller is not owner nor approved");
+        _burn(tokenId);
+    }
+
     /**
      * @dev Changes the name for SpacePanda tokenId
      */
