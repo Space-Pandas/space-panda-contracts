@@ -349,6 +349,17 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
     }
 
     /**
+    * @dev Mint Custom Pandas, should be used with burn
+    */
+    function mintCustomNft(address to) public {
+        require(totalSupply() < MAX_TOTAL_NFT_SUPPLY, "Exceeds max supply");
+        require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
+
+        _safeMint(to, _nftIndex);
+        _nftIndex++;
+    }
+
+    /**
     * @dev Mints Special Pandas
     */
     function mintSpecialNft(uint256 numberOfBoxes) public payable {
