@@ -184,6 +184,10 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     function burn(uint256 tokenId) public {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Invalid caller");
         _burn(tokenId);
+        // de-reserve the name
+        if (bytes(_tokenName[tokenId]).length > 0) {
+            toggleReserveName(_tokenName[tokenId], false);
+        }
     }
 
     /**
