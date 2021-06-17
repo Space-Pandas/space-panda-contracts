@@ -105,29 +105,6 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         }
     }
 
-    function validateCommonNftBatch(uint256 amount) public view returns (bool) {
-        if (amount == 1) {
-            return true;
-        }
-        uint fromPosition = _commonNftCount;
-        uint toPosition = fromPosition.add(amount);
-        if (fromPosition < 30000 && toPosition < 30000) {
-            return true;
-        } else if (fromPosition < 42000 && toPosition < 42000) {
-            return true;
-        } else if (fromPosition < 45000 && toPosition < 45000) {
-            return true;
-        } else if (fromPosition < 45800 && toPosition < 45800) {
-            return true;
-        } else if (fromPosition < 46050 && toPosition < 46050) {
-            return true;
-        } else if (fromPosition < 46110 && toPosition < 46110) {
-            return true;
-        }
-        // last 10 boxes not allowed for batch mint
-        return false;
-    }
-
     function startBlinkBox(bool isSpecial) public onlyOwner {
         if (isSpecial) {
             _specialNftStart = true;
@@ -184,9 +161,8 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     */
     function mintSpecialNft(uint256 numberOfBoxes) public payable {
         require(_specialNftStart, "Not started");
-        require(numberOfBoxes > 0 && numberOfBoxes <= 10, "Invalid size");
+        require(numberOfBoxes > 0 && numberOfBoxes <= 10 && SPECIAL_NFT_PRICE.mul(numberOfBoxes) == msg.value, "Invalid size or price");
         require(_specialNftCount.add(numberOfBoxes) <= 366 * (_currentSpecialNftRound - 1) + 240, "Exceeds max supply");
-        require(SPECIAL_NFT_PRICE.mul(numberOfBoxes) == msg.value, "Invalid price");
 
         _mintNft(msg.sender, numberOfBoxes);
         _specialNftCount += numberOfBoxes;
@@ -199,8 +175,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         require(_commonNftStart, "Not started");
         require(numberOfBoxes > 0 && numberOfBoxes <= 50, "Invalid size");
         require(_commonNftCount.add(numberOfBoxes) <= MAX_COMMON_NFT_SUPPLY, "Exceeds max supply");
-        require(validateCommonNftBatch(numberOfBoxes), "Invalid batch");
-        require(getCommonNftPrice().mul(numberOfBoxes) == msg.value, "Invalid price");
+        require(getCommonNftPrice().mul(numberOfBoxes) == msg.value, "Invalid batch or price");
 
         _mintNft(msg.sender, numberOfBoxes);
         _commonNftCount += numberOfBoxes;
