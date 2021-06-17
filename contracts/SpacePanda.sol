@@ -16,6 +16,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
 
     uint256 public constant NAME_CHANGE_PRICE = 100 * (10 ** 9);
     uint256 public constant MAX_SPECIAL_NFT_ROUND = 3;
+    uint256 public constant SPECIAL_NFT_PRICE = 50 * (10 ** 18);
 
     // index [0, 200) for airdrop
     uint256 public constant MAX_AIRDROP_NFT_SUPPLY = 200;
@@ -84,13 +85,6 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     }
 
     /**
-     * @dev Gets special NFT price
-     */
-    function getSpecialNftPrice() public pure returns (uint256) {
-        return 50 * (10 ** 18);
-    }
-
-    /**
      * @dev Gets current common NFT price
      */
     function getCommonNftPrice() public view returns (uint256) {
@@ -135,19 +129,24 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         return false;
     }
 
-    function startCommonBlinkBox() public onlyOwner {
-        require(!_commonNftStart, "Common blind box has started");
-        _commonNftStart = true;
-    }
-
-    function startSpecialBlinkBox() public onlyOwner {
-        require(!_specialNftStart, "Special blind box has started");
-        _specialNftStart = true;
+    function startBlinkBox(bool isSpecial) public onlyOwner {
+        if (isSpecial) {
+            _specialNftStart = true;
+        } else {
+            _commonNftStart = true;
+        }
     }
 
     function startNextSpecialNft() public onlyOwner {
         require(_currentSpecialNftRound < MAX_SPECIAL_NFT_ROUND, "Special nft ended");
         _currentSpecialNftRound += 1;
+    }
+
+    function _mintNft(address to, uint256 count) internal {
+        for (uint i = 0; i < count; i++) {
+            _safeMint(to, _nftIndex);
+            _nftIndex += 1;
+        }
     }
 
     /**
@@ -156,9 +155,8 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     function mintAirDropNft(address to) public onlyOwner {
         require(_airDropNftCount < MAX_AIRDROP_NFT_SUPPLY, "Airdrop ended");
 
-        _safeMint(to, _nftIndex);
+        _mintNft(to, 1);
         _airDropNftCount += 1;
-        _nftIndex += 1;
     }
 
     /**
@@ -168,9 +166,8 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         require(_specialNftCount < MAX_SPECIAL_NFT_SUPPLY, "Exceeds max supply");
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
 
-        _safeMint(to, _nftIndex);
+        _mintNft(to, 1);
         _specialNftCount += 1;
-        _nftIndex += 1;
     }
 
     /**
@@ -180,8 +177,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         require(totalSupply() < MAX_TOTAL_NFT_SUPPLY, "Exceeds max supply");
         require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
 
-        _safeMint(to, _nftIndex);
-        _nftIndex += 1;
+        _mintNft(to, 1);
     }
 
     /**
@@ -189,15 +185,11 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     */
     function mintSpecialNft(uint256 numberOfBoxes) public payable {
         require(_specialNftStart, "Special blind box not started");
-        require(numberOfBoxes > 0, "Invalid blind box size");
-        require(numberOfBoxes <= 10, "Maximum 10 blind box at once");
+        require(numberOfBoxes > 0 && numberOfBoxes <= 10, "Invalid blind box size");
         require(_specialNftCount.add(numberOfBoxes) <= 366 * (_currentSpecialNftRound - 1) + 240, "Exceeds max supply");
-        require(getSpecialNftPrice().mul(numberOfBoxes) == msg.value, "Price sent is not correct");
+        require(SPECIAL_NFT_PRICE.mul(numberOfBoxes) == msg.value, "Price sent is not correct");
 
-        for (uint i = 0; i < numberOfBoxes; i++) {
-            _safeMint(msg.sender, _nftIndex);
-            _nftIndex += 1;
-        }
+        _mintNft(msg.sender, numberOfBoxes);
         _specialNftCount = _specialNftCount + numberOfBoxes;
     }
 
@@ -206,20 +198,16 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     */
     function mintCommonNft(uint256 numberOfBoxes) public payable {
         require(_commonNftStart, "Common blind box not started");
-        require(numberOfBoxes > 0, "Invalid blind box size");
-        require(numberOfBoxes <= 50, "Maximum 50 blind box at once");
+        require(numberOfBoxes > 0 && numberOfBoxes <= 50, "Invalid blind box size");
         require(_commonNftCount.add(numberOfBoxes) <= MAX_COMMON_NFT_SUPPLY, "Exceeds max supply");
         require(validateCommonNftBatch(numberOfBoxes), "Batch is not correct");
         require(getCommonNftPrice().mul(numberOfBoxes) == msg.value, "Price sent is not correct");
 
-        for (uint i = 0; i < numberOfBoxes; i++) {
-            _safeMint(msg.sender, _nftIndex);
-            _nftIndex += 1;
-        }
+        _mintNft(msg.sender, numberOfBoxes);
         _commonNftCount = _commonNftCount + numberOfBoxes;
     }
 
-    function burn(uint256 tokenId) public virtual {
+    function burn(uint256 tokenId) public {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "caller is not owner nor approved");
         _burn(tokenId);
     }
@@ -232,11 +220,11 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
 
         require(_msgSender() == owner, "caller is not the owner");
         require(validateName(newName) == true, "Not a valid new name");
-        require(sha256(bytes(newName)) != sha256(bytes(_tokenName[tokenId])), "New name is same as the current one");
+        require(sha256(bytes(newName)) != sha256(bytes(_tokenName[tokenId])), "New name is the same as current");
         require(isNameReserved(newName) == false, "Name already reserved");
 
         ERC20Burnable(_sptAddress).transferFrom(msg.sender, address(this), NAME_CHANGE_PRICE);
-        // If already named, dereserve old name
+        // If already named, de-reserve old name
         if (bytes(_tokenName[tokenId]).length > 0) {
             toggleReserveName(_tokenName[tokenId], false);
         }
@@ -266,23 +254,19 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
      */
     function validateName(string memory str) public pure returns (bool){
         bytes memory b = bytes(str);
-        if(b.length < 1) return false;
-        if(b.length > 25) return false; // Cannot be longer than 25 characters
-        if(b[0] == 0x20) return false; // Leading space
-        if (b[b.length - 1] == 0x20) return false; // Trailing space
+        // Cannot be longer than 25 characters, no Leading and Trailing space
+        if(b.length < 1 || b.length > 25 || b[0] == 0x20 || b[b.length - 1] == 0x20) return false;
 
         bytes1 lastChar = b[0];
-
         for(uint i; i<b.length; i++){
             bytes1 char = b[i];
 
             if (char == 0x20 && lastChar == 0x20) return false; // Cannot contain continuous spaces
 
-            if(
-                !(char >= 0x30 && char <= 0x39) && //9-0
-            !(char >= 0x41 && char <= 0x5A) && //A-Z
-            !(char >= 0x61 && char <= 0x7A) && //a-z
-            !(char == 0x20) //space
+            if(!(char >= 0x30 && char <= 0x39) && //9-0
+              !(char >= 0x41 && char <= 0x5A) && //A-Z
+              !(char >= 0x61 && char <= 0x7A) && //a-z
+              !(char == 0x20) //space
             )
                 return false;
 
