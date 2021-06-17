@@ -65,8 +65,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     }
 
     function setSptAddress(address sptAddress) public onlyOwner {
-        require(sptAddress != address(0), "Invalid SPT address");
-        require(_sptAddress == address(0), "SPT should set once");
+        require(sptAddress != address(0) && _sptAddress == address(0), "SPT invalid or already set");
         _sptAddress = sptAddress;
     }
 
@@ -164,7 +163,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     */
     function mintAuctionNft(address to) public {
         require(_specialNftCount < MAX_SPECIAL_NFT_SUPPLY, "Exceeds max supply");
-        require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
+        require(hasRole(MINTER_ROLE, msg.sender), "Invalid caller");
 
         _mintNft(to, 1);
         _specialNftCount += 1;
@@ -175,7 +174,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     */
     function mintCustomNft(address to) public {
         require(totalSupply() < MAX_TOTAL_NFT_SUPPLY, "Exceeds max supply");
-        require(hasRole(MINTER_ROLE, msg.sender), "Caller is not a minter");
+        require(hasRole(MINTER_ROLE, msg.sender), "Invalid Caller");
 
         _mintNft(to, 1);
     }
@@ -184,31 +183,31 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     * @dev Mints Special Pandas
     */
     function mintSpecialNft(uint256 numberOfBoxes) public payable {
-        require(_specialNftStart, "Special blind box not started");
-        require(numberOfBoxes > 0 && numberOfBoxes <= 10, "Invalid blind box size");
+        require(_specialNftStart, "Not started");
+        require(numberOfBoxes > 0 && numberOfBoxes <= 10, "Invalid size");
         require(_specialNftCount.add(numberOfBoxes) <= 366 * (_currentSpecialNftRound - 1) + 240, "Exceeds max supply");
-        require(SPECIAL_NFT_PRICE.mul(numberOfBoxes) == msg.value, "Price sent is not correct");
+        require(SPECIAL_NFT_PRICE.mul(numberOfBoxes) == msg.value, "Invalid price");
 
         _mintNft(msg.sender, numberOfBoxes);
-        _specialNftCount = _specialNftCount + numberOfBoxes;
+        _specialNftCount += numberOfBoxes;
     }
 
     /**
     * @dev Mints Common Pandas
     */
     function mintCommonNft(uint256 numberOfBoxes) public payable {
-        require(_commonNftStart, "Common blind box not started");
-        require(numberOfBoxes > 0 && numberOfBoxes <= 50, "Invalid blind box size");
+        require(_commonNftStart, "Not started");
+        require(numberOfBoxes > 0 && numberOfBoxes <= 50, "Invalid size");
         require(_commonNftCount.add(numberOfBoxes) <= MAX_COMMON_NFT_SUPPLY, "Exceeds max supply");
-        require(validateCommonNftBatch(numberOfBoxes), "Batch is not correct");
-        require(getCommonNftPrice().mul(numberOfBoxes) == msg.value, "Price sent is not correct");
+        require(validateCommonNftBatch(numberOfBoxes), "Invalid batch");
+        require(getCommonNftPrice().mul(numberOfBoxes) == msg.value, "Invalid price");
 
         _mintNft(msg.sender, numberOfBoxes);
-        _commonNftCount = _commonNftCount + numberOfBoxes;
+        _commonNftCount += numberOfBoxes;
     }
 
     function burn(uint256 tokenId) public {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "caller is not owner nor approved");
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "Invalid caller");
         _burn(tokenId);
     }
 
@@ -218,9 +217,8 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     function changeName(uint256 tokenId, string memory newName) public {
         address owner = ownerOf(tokenId);
 
-        require(_msgSender() == owner, "caller is not the owner");
-        require(validateName(newName) == true, "Not a valid new name");
-        require(sha256(bytes(newName)) != sha256(bytes(_tokenName[tokenId])), "New name is the same as current");
+        require(_msgSender() == owner, "Invalid caller");
+        require(validateName(newName) == true, "Invalid name");
         require(isNameReserved(newName) == false, "Name already reserved");
 
         ERC20Burnable(_sptAddress).transferFrom(msg.sender, address(this), NAME_CHANGE_PRICE);
