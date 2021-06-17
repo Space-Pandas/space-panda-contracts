@@ -63,7 +63,7 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
 
     // Public variables
 
-    uint256 public constant NAME_CHANGE_PRICE = 1000 * (10 ** 9);
+    uint256 public constant NAME_CHANGE_PRICE = 100 * (10 ** 9);
 
     uint256 public constant MAX_SPECIAL_NFT_ROUND = 3;
 
@@ -76,11 +76,8 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
     // index [46520, 47618) for special edition
     uint256 public constant MAX_SPECIAL_NFT_SUPPLY = 366 * MAX_SPECIAL_NFT_ROUND;
 
-    // index [47618, 47700) reserved for community grants
-    uint256 public constant MAX_COMMUNITY_RESERVED = 82;
-
-    // airdrop + common panda + special panda
-    uint256 public constant MAX_TOTAL_NFT_SUPPLY = 47500;
+    // index [47618, 50000) reserved for cross chain transfer from other planet
+    uint256 public constant MAX_TOTAL_NFT_SUPPLY = 50000;
 
     // minter role for auction contract, game contract
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -349,7 +346,7 @@ contract SpacePanda is Context, Ownable, ERC165, IERC721Enumerable, AccessContro
     }
 
     /**
-    * @dev Mint Custom Pandas, should be used with burn
+    * @dev Mint custom Pandas, should be used with burn
     */
     function mintCustomNft(address to) public {
         require(totalSupply() < MAX_TOTAL_NFT_SUPPLY, "Exceeds max supply");
