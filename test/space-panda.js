@@ -11,8 +11,6 @@ contract("space panda test", async accounts => {
 
     it("should deploy successfully", async () => {
         const panda = await SpacePanda.deployed();
-        await panda.setSptAddress("0x0000000000000000000000000000000000000001");
-        await panda.setSptAddress("0x0000000000000000000000000000000000000002");
     });
 
     /**it("should mint successfully", async () => {
