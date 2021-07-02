@@ -12,6 +12,10 @@ import "./uniswap/IUniswapV2Pair.sol";
 import "./uniswap/IUniswapV2Router01.sol";
 import "./uniswap/IUniswapV2Router02.sol";
 
+/**
+ * @title SpacePandaToken contract
+ * @dev Space Panda Token(SPT) is a Reflection based smart contract.
+ */
 contract SpacePandaToken is Context, IERC20, Ownable {
     using SafeMath for uint256;
     using Address for address;
@@ -26,7 +30,9 @@ contract SpacePandaToken is Context, IERC20, Ownable {
     address[] private _excluded;
 
     uint256 private constant MAX = ~uint256(0);
-    uint256 private _tTotal = 1000000000 * 10**6 * 10**9;
+    // transferable total
+    uint256 private _tTotal = 1000000000 * 10**9;
+    // reflection total. Everyone’s money will be worth more in case of deflation.
     uint256 private _rTotal = (MAX - (MAX % _tTotal));
     uint256 private _tFeeTotal;
 
@@ -46,8 +52,8 @@ contract SpacePandaToken is Context, IERC20, Ownable {
     bool inSwapAndLiquify;
     bool public swapAndLiquifyEnabled = true;
 
-    uint256 public _maxTxAmount = 5000000 * 10**6 * 10**9;
-    uint256 private numTokensSellToAddToLiquidity = 500000 * 10**6 * 10**9;
+    uint256 public _maxTxAmount = 5000000 * 10**9;
+    uint256 private numTokensSellToAddToLiquidity = 500000 * 10**9;
 
     event MinTokensBeforeSwapUpdated(uint256 minTokensBeforeSwap);
     event SwapAndLiquifyEnabledUpdated(bool enabled);
