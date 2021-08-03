@@ -47,6 +47,8 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     // in order to accept space pandas from other planets, the total capacity should be governed.
     uint256 private _maxCapacity = MAX_TOTAL_NFT_SUPPLY;
 
+    event SpacePandaMinted(address dest, uint256 fromIndex, uint256 amount);
+
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
      */
@@ -104,10 +106,12 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     }
 
     function _mintNft(address to, uint256 count) internal {
+        uint fromPosition = _nftIndex;
         for (uint i = 0; i < count; i++) {
             _safeMint(to, _nftIndex);
             _nftIndex += 1;
         }
+        emit SpacePandaMinted(to, fromPosition, count);
     }
 
     /**
