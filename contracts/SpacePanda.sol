@@ -78,7 +78,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         }
     }
 
-    function startBlinkBox(bool isSpecial) public onlyOwner {
+    function startBlindBox(bool isSpecial) public onlyOwner {
         if (isSpecial) {
             _specialNftStart = true;
         } else {
