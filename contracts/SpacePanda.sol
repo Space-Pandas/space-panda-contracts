@@ -134,7 +134,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     /**
     * @dev Mint custom Pandas, should be used with burn
     */
-    function mintCustomNft(address to) public {
+    function mintCustomNft(address to) external {
         require(totalSupply() < _maxCapacity, "Exceeds max supply");
         require(hasRole(MINTER_ROLE, msg.sender), "Invalid Caller");
 
@@ -166,8 +166,8 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         _commonNftCount += numberOfBoxes;
     }
 
-    function burn(uint256 tokenId) public {
-        require(_isApprovedOrOwner(_msgSender(), tokenId) && hasRole(MINTER_ROLE, msg.sender), "Invalid caller");
+    function burn(uint256 tokenId) external {
+        require(_isApprovedOrOwner(msg.sender, tokenId) && hasRole(MINTER_ROLE, msg.sender), "Invalid caller");
         _burn(tokenId);
     }
 
