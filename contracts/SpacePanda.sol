@@ -17,13 +17,13 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     uint256 public constant MAX_SPECIAL_NFT_ROUND = 3;
     uint256 public constant SPECIAL_NFT_PRICE = 50 * (10 ** 18);
 
-    // index [0, 500) for airdrop
+    // airdrop
     uint256 public constant MAX_AIRDROP_NFT_SUPPLY = 500;
 
-    // index [200, 46520) for common edition
+    // common edition
     uint256 public constant MAX_COMMON_NFT_SUPPLY = 46120;
 
-    // index [46520, 47618) for special edition
+    // special edition
     uint256 public constant MAX_SPECIAL_NFT_SUPPLY = 366 * MAX_SPECIAL_NFT_ROUND;
 
     // the number of space pandas on this planet. airdrop + common edition + special edition
