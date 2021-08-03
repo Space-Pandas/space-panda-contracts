@@ -17,8 +17,8 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     uint256 public constant MAX_SPECIAL_NFT_ROUND = 3;
     uint256 public constant SPECIAL_NFT_PRICE = 50 * (10 ** 18);
 
-    // index [0, 200) for airdrop
-    uint256 public constant MAX_AIRDROP_NFT_SUPPLY = 200;
+    // index [0, 500) for airdrop
+    uint256 public constant MAX_AIRDROP_NFT_SUPPLY = 500;
 
     // index [200, 46520) for common edition
     uint256 public constant MAX_COMMON_NFT_SUPPLY = 46120;
@@ -26,11 +26,14 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     // index [46520, 47618) for special edition
     uint256 public constant MAX_SPECIAL_NFT_SUPPLY = 366 * MAX_SPECIAL_NFT_ROUND;
 
-    // index [47618, 50000) reserved for cross chain transfer from other planet
-    uint256 public constant MAX_TOTAL_NFT_SUPPLY = 50000;
+    // the number of space pandas on this planet. airdrop + common edition + special edition
+    uint256 public constant MAX_TOTAL_NFT_SUPPLY = 47718;
 
     // minter role for auction contract, game contract
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
+    // governance role for space panda, this role will be from community
+    bytes32 public constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
 
     bool private _commonNftStart = false;
     bool private _specialNftStart = false;
@@ -41,6 +44,8 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     uint256 private _airDropNftCount = 0;
     uint256 private _commonNftCount = 0;
     uint256 private _specialNftCount = 0;
+    // in order to accept space pandas from other planets, the total capacity should be governed.
+    uint256 private _maxCapacity = MAX_TOTAL_NFT_SUPPLY;
 
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
@@ -48,6 +53,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     constructor (string memory name, string memory symbol) ERC721(name, symbol) {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
+        _setupRole(GOVERN_ROLE, _msgSender());
     }
 
     /**
@@ -78,6 +84,12 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         } else {
             _commonNftStart = true;
         }
+    }
+
+    function setCapacity(uint256 capacity) public {
+        require(hasRole(GOVERN_ROLE, msg.sender), "Invalid caller");
+        require(capacity > MAX_TOTAL_NFT_SUPPLY, "Invalid capacity");
+        _maxCapacity = capacity;
     }
 
     function setTokenURI(uint256 tokenId, string memory _tokenURI) public {
@@ -123,7 +135,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     * @dev Mint custom Pandas, should be used with burn
     */
     function mintCustomNft(address to) public {
-        require(totalSupply() < MAX_TOTAL_NFT_SUPPLY, "Exceeds max supply");
+        require(totalSupply() < _maxCapacity, "Exceeds max supply");
         require(hasRole(MINTER_ROLE, msg.sender), "Invalid Caller");
 
         _mintNft(to, 1);
