@@ -113,8 +113,8 @@ contract SptCrowdSale is Ownable {
         // update claim record
         ClaimRecord memory record = _claimRecords[msg.sender];
         record.amount = record.amount.add(sptBought);
-        record.startBlock = block.number;
-        record.endBlock = block.number + _lockBlocks;
+        record.startBlock = block.number + 1;
+        record.endBlock = record.startBlock + _lockBlocks;
         _claimRecords[msg.sender] = record;
 
         if (amount > 0) {

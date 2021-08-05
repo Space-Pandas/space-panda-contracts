@@ -67,7 +67,7 @@ describe("crowd sale test", async function () {
     ).to.be.ok;
   });
 
-  it("buy once", async function () {
+  it("buy and claim", async function () {
     try {
       await this.scs.setStarted(true);
       await network.provider.send("evm_setAutomine", [false]);
@@ -83,19 +83,19 @@ describe("crowd sale test", async function () {
       const [owner] = await ethers.getSigners();
       const [claimable, record] = await this.scs.claimInfo(owner.address, 0);
       const claimableAmount = BigNumber.from(4000 * 1_000_000)
-        .mul(2)
+        .mul(1)
         .div(LockBlocks);
 
       expect(claimable.toString()).to.be.equal(claimableAmount.toString());
-      expect(record.startBlock.toString()).to.be.eq(`${blockNumber}`);
+      expect(record.startBlock.toString()).to.be.eq(`${blockNumber + 1}`);
       expect(record.endBlock.toString()).to.be.eq(
-        `${blockNumber + LockBlocks}`
+        `${blockNumber + 1 + LockBlocks}`
       );
       await this.scs.claimSpt();
       await network.provider.send("evm_mine", []); // block + 3
       const balance = await this.spt.balanceOf(owner.address);
       const claimed = BigNumber.from(4000 * 1_000_000)
-        .mul(3)
+        .mul(2)
         .div(LockBlocks);
       expect(balance.toString()).to.be.eq(claimed.toString());
 
@@ -103,6 +103,45 @@ describe("crowd sale test", async function () {
       expect(claimable2.toString()).to.be.equal("0");
       expect(record2.startBlock).to.be.equal(`${blockNumber + 4}`);
       expect(record2.endBlock).to.be.eq(record.endBlock);
+    } finally {
+      await network.provider.send("evm_setAutomine", [true]);
+    }
+  });
+
+  it("buy twice should claim", async function () {
+    try {
+      await this.scs.setStarted(true);
+      await network.provider.send("evm_setAutomine", [false]);
+      await this.scs.buySpt({
+        value: EthBase,
+      }); // got 4000 SPT
+      // mine two blocks
+      await network.provider.send("evm_mine", []); // mine buy tx
+      const blockNumber = await ethers.provider.getBlockNumber();
+      await network.provider.send("evm_mine", []); // block + 1
+      await network.provider.send("evm_mine", []); // block + 2
+      await this.scs.buySpt({
+        value: EthBase,
+      }); // got 4000 SPT
+      await network.provider.send("evm_mine", []); // block + 3
+
+      const [owner] = await ethers.getSigners();
+      const [claimable, record] = await this.scs.claimInfo(owner.address, 0);
+      const balance = await this.spt.balanceOf(owner.address);
+      const claimed = BigNumber.from(4000 * 1_000_000)
+        .mul(2)
+        .div(LockBlocks);
+      expect(balance.toString()).to.be.eq(claimed.toString());
+
+      const pendingAmount = BigNumber.from(4000 * 1_000_000)
+        .mul(2)
+        .sub(claimed);
+      expect(record.amount).to.be.equal(pendingAmount);
+
+      expect(claimable.toString()).to.be.equal("0");
+      expect(record.startBlock.toString()).to.be.eq(`${blockNumber + 4}`);
+      const newEndBlock = blockNumber + 4 + LockBlocks; // + 3 + 1
+      expect(record.endBlock.toString()).to.be.eq(`${newEndBlock}`);
     } finally {
       await network.provider.send("evm_setAutomine", [true]);
     }
