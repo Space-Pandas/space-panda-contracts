@@ -87,10 +87,7 @@ contract SptCrowdSale is Ownable {
 
     function _buySpt(uint256 amount) internal onlyStarted {
         require(amount > 0, "SCS: invalid amount");
-        require(
-            !(_curSlot == MaxSlots - 1 && _curSlotRemaining == 0),
-            "SCS: out of slots"
-        );
+        require(_curSlot < MaxSlots, "SCS: out of slots");
         // claim pending SPT if any
         _claimSpt(msg.sender);
         uint256 boughtAmount = 0;

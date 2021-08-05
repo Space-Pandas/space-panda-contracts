@@ -74,7 +74,15 @@ describe("crowd sale test", async function () {
   it("buy and claim", async function () {
     try {
       await this.scs.setStarted(true);
+
+      await expect(
+        this.scs.buySpt({
+          value: BigNumber.from(0),
+        })
+      ).to.be.revertedWith("SCS: invalid amount");
+
       await network.provider.send("evm_setAutomine", [false]);
+
       await this.scs.buySpt({
         value: EthBase,
       }); // got 4000 SPT
@@ -228,6 +236,12 @@ describe("crowd sale test", async function () {
       expect(balanceBefore.sub(balanceAfter)).to.be.gt(balance);
       // and less than received + 1 eth
       expect(balanceBefore.sub(balanceAfter)).to.be.lt(balance.add(EthBase));
+
+      expect(
+        this.scs.buySpt({
+          value: EthBase,
+        })
+      ).to.be.revertedWith("SCS: out of slots");
     } finally {
       await network.provider.send("evm_setAutomine", [true]);
     }
