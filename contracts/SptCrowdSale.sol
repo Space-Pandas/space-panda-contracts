@@ -103,8 +103,12 @@ contract SptCrowdSale is Ownable {
             boughtAmount = boughtAmount.add(amountGet);
             _curSlotRemaining = slotLeft;
             amount = ethLeft;
-            if (slotLeft == 0 && _curSlot < MaxSlots - 1) {
-                _moveToNextSlot();
+            if (slotLeft == 0) {
+                if (_curSlot < MaxSlots - 1) {
+                    _moveToNextSlot();
+                } else {
+                    _curSlot = MaxSlots;
+                }
             }
         }
 

@@ -201,4 +201,35 @@ describe("crowd sale test", async function () {
       await network.provider.send("evm_setAutomine", [true]);
     }
   });
+  it("buy all at once", async function () {
+    try {
+      await this.scs.setStarted(true);
+      await network.provider.send("evm_setAutomine", [false]);
+
+      const [alice, bob, charlie] = await ethers.getSigners();
+      const balanceBefore = await ethers.provider.getBalance(alice.address);
+
+      const buy = await this.scs.buySpt({
+        value: EthBase.mul(5000),
+      });
+
+      await network.provider.send("evm_mine", []);
+      await expect(buy)
+        .to.emit(this.scs, "SptBought")
+        .withArgs(alice.address, sptAmount(1_000_000).mul(10));
+
+      const [slot, , remains] = await this.scs.slotInfo();
+      expect(slot).to.be.eq(10);
+      expect(remains).to.be.eq(0);
+      const balance = await ethers.provider.getBalance(this.scs.address);
+      expect(balance).to.be.eq(EthBase.mul(4750));
+      const balanceAfter = await ethers.provider.getBalance(alice.address);
+      // balance change should be greater than scs received
+      expect(balanceBefore.sub(balanceAfter)).to.be.gt(balance);
+      // and less than received + 1 eth
+      expect(balanceBefore.sub(balanceAfter)).to.be.lt(balance.add(EthBase));
+    } finally {
+      await network.provider.send("evm_setAutomine", [true]);
+    }
+  });
 });
