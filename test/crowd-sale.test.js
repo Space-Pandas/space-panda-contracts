@@ -188,6 +188,15 @@ describe("crowd sale test", async function () {
       );
       expect(record2.amount).to.be.equal(sptAmount(996667 + 2856));
       expect(claimable2).to.be.equal("0");
+
+      const balance = await ethers.provider.getBalance(this.scs.address);
+      // balance should be 250 + 300 + 0.9996
+      const slot3Balance = BigNumber.from(9996).mul(EthBase).div(10000);
+      expect(balance).to.be.eq(
+        BigNumber.from(250 + 300)
+          .mul(EthBase)
+          .add(slot3Balance)
+      );
     } finally {
       await network.provider.send("evm_setAutomine", [true]);
     }
