@@ -1,6 +1,9 @@
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
 
+const privateKey = process.env.SPT_PRIVATE_KEY;
+const etherscanKey = process.env.SPT_ETHERSCAN_KEY;
+
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
@@ -12,12 +15,12 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 });
 
 task("balance", "Prints an account's balance")
-    .addParam("account", "The account's address")
-    .setAction(async (taskArgs, hre) => {
-      const provider = hre.ethers.getDefaultProvider();
-      const balance = await provider.getBalance(taskArgs.account);
-      console.log(hre.ethers.utils.formatEther(balance));
-    });
+  .addParam("account", "The account's address")
+  .setAction(async (taskArgs, hre) => {
+    const provider = hre.ethers.getDefaultProvider();
+    const balance = await provider.getBalance(taskArgs.account);
+    console.log(hre.ethers.utils.formatEther(balance));
+  });
 
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
@@ -54,6 +57,9 @@ module.exports = {
     apiKey: "V54Z9F24KD1ZBIHH9ME51HZJZWACS7K8HV"
   },
   mocha: {
-    timeout: 60 * 3600 * 1000
-  }
+    timeout: 60 * 3600 * 1000,
+  },
+  etherscan: {
+    apiKey: etherscanKey,
+  },
 };
