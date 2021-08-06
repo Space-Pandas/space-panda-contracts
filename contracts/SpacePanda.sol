@@ -94,10 +94,9 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         _maxCapacity = capacity;
     }
 
-    function setTokenURI(uint256 tokenId, string memory _tokenURI) public {
+    function setBaseURI(string memory _tokenURI) public {
         require(hasRole(MINTER_ROLE, msg.sender), "Invalid caller");
-        require(bytes(tokenURI(tokenId)).length == 0, "Reset token uri");
-        _setTokenURI(tokenId, _tokenURI);
+        _setBaseURI(_tokenURI);
     }
 
     function startNextSpecialNft() public onlyOwner {

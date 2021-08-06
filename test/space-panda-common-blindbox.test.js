@@ -19,7 +19,7 @@ async function printBalance() {
   console.log(`${owner.address} has ${ethers.utils.formatEther(balance)} ether`);
 }
 
-describe("space panda overall tests", async function () {
+describe("space panda common tests", async function () {
   beforeEach(async function () {
     const panda = await setupContracts();
     this.panda = panda;
