@@ -26,8 +26,6 @@ describe("space panda airdrop tests", async function () {
   });
 
   it("test airdrop", async function () {
-    let price = await getCurrentPrice(this);
-    expect(price).to.eq("0.08");
     await printBalance();
     const toAddress = "0xcdbf90174493dcc418f177a4d7b2604a95997e1f";
     for(let i=1; i<501; i++) {
