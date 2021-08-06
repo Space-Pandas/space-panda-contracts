@@ -27,15 +27,15 @@ describe("space panda airdrop tests", async function () {
 
   it("test airdrop", async function () {
     await printBalance();
-    const toAddress = "0xcdbf90174493dcc418f177a4d7b2604a95997e1f";
+    const [, bob] = await ethers.getSigners();
     for(let i=1; i<501; i++) {
-      await this.panda.mintAirDropNft(toAddress);
+      await this.panda.mintAirDropNft(bob.address);
       if (i % 50 === 0) {
         console.log(`mint airdrop blindbox for ${i} times`);
       }
     }
     expect(
-        this.panda.mintAirDropNft(toAddress)
+        this.panda.mintAirDropNft(bob.address)
     ).to.be.revertedWith("Airdrop ended");
 
     const total = await this.panda.totalSupply();

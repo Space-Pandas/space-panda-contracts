@@ -51,9 +51,9 @@ describe("space panda special tests", async function () {
     ).to.be.revertedWith("Exceeds max supply");
     await printBalance();
 
-    const toAddress = "0xcdbf90174493dcc418f177a4d7b2604a95997e1f";
+    const [, bob] = await ethers.getSigners();
     for(let i=1; i<127; i++) {
-      await this.panda.mintAuctionNft(toAddress);
+      await this.panda.mintAuctionNft(bob.address);
       if (i % 10 === 0) {
         console.log(`open auction blindbox for ${i} times`);
       }

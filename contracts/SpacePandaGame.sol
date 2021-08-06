@@ -3,10 +3,11 @@
 pragma solidity ^0.7.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721Burnable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20Burnable.sol";
+import "./ISpacePanda.sol";
 
 contract SpacePandaGame is Ownable, AccessControl {
     // Mapping from token ID to space panda name
@@ -22,12 +23,12 @@ contract SpacePandaGame is Ownable, AccessControl {
     uint256 public NAMING_FEE = 100 * (10 ** 6);
 
     ERC20Burnable public _token;
-    ERC721 public _sp;
+    ISpacePanda public _sp;
 
     // Events
     event NameChange (uint256 indexed spIndex, string newName);
 
-    constructor (ERC20Burnable token, ERC721 sp) {
+    constructor (ERC20Burnable token, ISpacePanda sp) {
         _token = token;
         _sp = sp;
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
@@ -38,6 +39,12 @@ contract SpacePandaGame is Ownable, AccessControl {
         require(hasRole(GOVERN_ROLE, msg.sender), "Invalid caller");
         require(fee > 0, "Invalid fee");
         NAMING_FEE = fee;
+    }
+
+    function updatePanda(uint256 tokenId) public {
+        require(_sp.ownerOf(tokenId) == msg.sender, "Invalid caller");
+        _sp.burn(tokenId);
+        _sp.mintCustomNft(msg.sender);
     }
 
     /**
