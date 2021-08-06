@@ -10,6 +10,14 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
+task("balance", "Prints an account's balance")
+    .addParam("account", "The account's address")
+    .setAction(async (taskArgs, hre) => {
+      const provider = hre.ethers.getDefaultProvider();
+      const balance = await provider.getBalance(taskArgs.account);
+      console.log(hre.ethers.utils.formatEther(balance));
+    });
+
 // You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
@@ -18,4 +26,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
  */
 module.exports = {
   solidity: "0.7.6",
+  mocha: {
+    timeout: 60 * 3600 * 1000
+  }
 };

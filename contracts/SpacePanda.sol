@@ -164,7 +164,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         require(_commonNftStart, "Not started");
         require(numberOfBoxes > 0 && numberOfBoxes <= 50, "Invalid size");
         require(_commonNftCount.add(numberOfBoxes) <= MAX_COMMON_NFT_SUPPLY, "Exceeds max supply");
-        require(getCommonNftPrice().mul(numberOfBoxes) == msg.value, "Invalid batch or price");
+        require(getCommonNftPrice().mul(numberOfBoxes) == msg.value, "Invalid price");
 
         _mintNft(msg.sender, numberOfBoxes);
         _commonNftCount += numberOfBoxes;
