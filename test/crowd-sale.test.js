@@ -71,7 +71,7 @@ describe("crowd sale test", async function () {
     ).to.be.ok;
   });
 
-  it("buy and claim", async function () {
+  it("buy, claim and withdraw", async function () {
     try {
       await this.scs.setStarted(true);
 
@@ -92,7 +92,7 @@ describe("crowd sale test", async function () {
       await network.provider.send("evm_mine", []); // block + 1
       await network.provider.send("evm_mine", []); // block + 2
 
-      const [owner] = await ethers.getSigners();
+      const [owner, bob] = await ethers.getSigners();
       const [claimable, record] = await this.scs.claimInfo(owner.address, 0);
       const claimableAmount = BigNumber.from(4000 * 1_000_000)
         .mul(1)
@@ -115,6 +115,29 @@ describe("crowd sale test", async function () {
       expect(claimable2.toString()).to.be.equal("0");
       expect(record2.startBlock).to.be.equal(`${blockNumber + 4}`);
       expect(record2.endBlock).to.be.eq(record.endBlock);
+
+      await network.provider.send("evm_setAutomine", [true]);
+
+      await expect(this.scs.connect(bob).withdraw(EthBase)).to.be.revertedWith(
+        "Ownable: caller is not the owner"
+      );
+
+      const scsBalance = await ethers.provider.getBalance(this.scs.address);
+      expect(scsBalance).to.be.eq(EthBase);
+      const ownerBalancePre = await ethers.provider.getBalance(owner.address);
+      expect(this.scs.withdraw(EthBase))
+        .to.emit(this.scs, "WithDraw")
+        .withArgs(owner.address, EthBase);
+
+      const ownerBalanceAfter = await ethers.provider.getBalance(owner.address);
+      expect(
+        ownerBalanceAfter
+          .sub(ownerBalancePre)
+          .gt(EthBase.sub("100000000000000")) // with some gas fee
+      );
+      await expect(await ethers.provider.getBalance(this.scs.address)).to.be.eq(
+        0
+      );
     } finally {
       await network.provider.send("evm_setAutomine", [true]);
     }

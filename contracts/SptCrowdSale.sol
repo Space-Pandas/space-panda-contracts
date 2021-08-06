@@ -30,6 +30,7 @@ contract SptCrowdSale is Ownable {
     event SptCrowdSaleStarted(bool started);
     event SptClaimed(address indexed account, uint256 amount);
     event SptBought(address indexed account, uint256 amount);
+    event WithDraw(address indexed account, uint256 amount);
 
     struct ClaimRecord {
         uint256 startBlock;
@@ -159,6 +160,11 @@ contract SptCrowdSale is Ownable {
         uint256 claimed = _claimSpt(who);
         require(claimed > 0, "SCS: nothing to claim");
         return claimed;
+    }
+
+    function withdraw(uint256 amount) external onlyOwner {
+        msg.sender.transfer(amount);
+        emit WithDraw(msg.sender, amount);
     }
 
     function claimInfo(address who, uint256 at)
