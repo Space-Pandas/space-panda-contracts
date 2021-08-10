@@ -16,6 +16,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
 
     uint256 public constant MAX_SPECIAL_NFT_ROUND = 3;
     uint256 public constant SPECIAL_NFT_PRICE = 50 * (10 ** 18);
+    enum MintType { AIRDROP, COMMON, SPECIAL, AUCTION, CUSTOM }
 
     // airdrop
     uint256 public constant MAX_AIRDROP_NFT_SUPPLY = 500;
@@ -47,7 +48,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     // in order to accept space pandas from other planets, the total capacity should be governed.
     uint256 private _maxCapacity = MAX_TOTAL_NFT_SUPPLY;
 
-    event SpacePandaMinted(address dest, uint256 fromIndex, uint256 amount);
+    event SpacePandaMinted(address dest, uint256 fromIndex, uint256 amount, MintType type);
 
     /**
      * @dev Initializes the contract by setting a `name` and a `symbol` to the token collection.
@@ -94,9 +95,10 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         _maxCapacity = capacity;
     }
 
-    function setBaseURI(string memory _tokenURI) public {
+    function setTokenURI(uint256 tokenId, string memory _tokenURI) public {
         require(hasRole(MINTER_ROLE, msg.sender), "Invalid caller");
-        _setBaseURI(_tokenURI);
+        require(bytes(tokenURI(tokenId)).length == 0, "Reset token uri");
+        _setTokenURI(tokenId, _tokenURI);
     }
 
     function startNextSpecialNft() public onlyOwner {
@@ -104,13 +106,13 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         _currentSpecialNftRound += 1;
     }
 
-    function _mintNft(address to, uint256 count) internal {
+    function _mintNft(address to, uint256 count, MintType type) internal {
         uint fromPosition = _nftIndex;
         for (uint i = 0; i < count; i++) {
             _safeMint(to, _nftIndex);
             _nftIndex += 1;
         }
-        emit SpacePandaMinted(to, fromPosition, count);
+        emit SpacePandaMinted(to, fromPosition, count, type);
     }
 
     /**
@@ -119,7 +121,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     function mintAirDropNft(address to) public onlyOwner {
         require(_airDropNftCount < MAX_AIRDROP_NFT_SUPPLY, "Airdrop ended");
 
-        _mintNft(to, 1);
+        _mintNft(to, 1, MintType.AIRDROP);
         _airDropNftCount += 1;
     }
 
@@ -130,7 +132,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         require(_specialNftCount < MAX_SPECIAL_NFT_SUPPLY, "Exceeds max supply");
         require(hasRole(MINTER_ROLE, msg.sender), "Invalid caller");
 
-        _mintNft(to, 1);
+        _mintNft(to, 1, MintType.AUCTION);
         _specialNftCount += 1;
     }
 
@@ -141,7 +143,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         require(totalSupply() < _maxCapacity, "Exceeds max supply");
         require(hasRole(MINTER_ROLE, msg.sender), "Invalid Caller");
 
-        _mintNft(to, 1);
+        _mintNft(to, 1, MintType.CUSTOM);
     }
 
     /**
@@ -152,7 +154,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         require(numberOfBoxes > 0 && numberOfBoxes <= 10 && SPECIAL_NFT_PRICE.mul(numberOfBoxes) == msg.value, "Invalid size or price");
         require(_specialNftCount.add(numberOfBoxes) <= 366 * (_currentSpecialNftRound - 1) + 240, "Exceeds max supply");
 
-        _mintNft(msg.sender, numberOfBoxes);
+        _mintNft(msg.sender, numberOfBoxes, MintType.SPECIAL);
         _specialNftCount += numberOfBoxes;
     }
 
@@ -165,7 +167,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         require(_commonNftCount.add(numberOfBoxes) <= MAX_COMMON_NFT_SUPPLY, "Exceeds max supply");
         require(getCommonNftPrice().mul(numberOfBoxes) == msg.value, "Invalid price");
 
-        _mintNft(msg.sender, numberOfBoxes);
+        _mintNft(msg.sender, numberOfBoxes, MintType.COMMON);
         _commonNftCount += numberOfBoxes;
     }
 

@@ -1,5 +1,5 @@
-const SpacePandaToken = artifacts.require("SpacePandaToken");
+const SpacePanda = artifacts.require("SpacePanda");
 
 module.exports = function(deployer) {
-    deployer.deploy(SpacePandaToken);
+    deployer.deploy(SpacePanda);
 };
