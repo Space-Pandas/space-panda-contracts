@@ -35,13 +35,13 @@ module.exports = {
       bsc_testnet: {
         url: "https://data-seed-prebsc-2-s3.binance.org:8545/",
         accounts: [
-          "31d65c4c48af8c69b6956da054c3c3a73cb2c030188dbed23df8b477d234f652",
+          "test seeds",
         ],
       },
       bsc: {
         url: "https://binance.ankr.com",
         accounts: [
-          "to be stored somewhere else",
+          "prod seeds",
         ],
       },
     },
