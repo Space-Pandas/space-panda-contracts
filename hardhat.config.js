@@ -1,4 +1,5 @@
 require("@nomiclabs/hardhat-waffle");
+require("@nomiclabs/hardhat-etherscan");
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -26,7 +27,7 @@ task("balance", "Prints an account's balance")
  */
 module.exports = {
   solidity: "0.7.6",
-    networks: {
+  networks: {
       hardhat: {
           accounts: {
               accountsBalance: "50000000000000000000000"
@@ -34,17 +35,24 @@ module.exports = {
       },
       bsc_testnet: {
         url: "https://data-seed-prebsc-2-s3.binance.org:8545/",
-        accounts: [
-          "test seeds",
-        ],
+        chainId: 97,
+        gasPrice: 20000000000,
+        accounts: {
+            mnemonic: 'your testnet seed phrase'
+        },
       },
       bsc: {
-        url: "https://binance.ankr.com",
-        accounts: [
-          "prod seeds",
-        ],
+        url: "https://bsc-dataseed.binance.org/",
+        chainId: 56,
+        gasPrice: 20000000000,
+          accounts: {
+              mnemonic: ''
+          },
       },
     },
+  etherscan: {
+    apiKey: "V54Z9F24KD1ZBIHH9ME51HZJZWACS7K8HV"
+  },
   mocha: {
     timeout: 60 * 3600 * 1000
   }
