@@ -19,7 +19,8 @@
  */
 
 const HDWalletProvider = require('@truffle/hdwallet-provider');
-const { MNEMONIC, BSCSCANAPIKEY } = require('~/env.json');
+const homedir = require('os').homedir();
+const { PRIVATE_KEY, BSCSCAN_APIKEY } = require(`${homedir}/env.json`);
 
 // const infuraKey = "fj4jll3k.....";
 //
@@ -50,7 +51,7 @@ module.exports = {
        network_id: "*",       // Any network (default: none)
      },
      bsc_testnet: {
-       provider: () => new HDWalletProvider(MNEMONIC, `https://data-seed-prebsc-1-s1.binance.org:8545`),
+       provider: () => new HDWalletProvider(PRIVATE_KEY, `https://data-seed-prebsc-1-s1.binance.org:8545`),
        network_id: 97,
        timeoutBlocks: 200,
        confirmations: 5,
@@ -115,6 +116,6 @@ module.exports = {
 
   plugins: ["truffle-contract-size", "truffle-plugin-verify"],
   api_keys: {
-      bscscan: BSCSCANAPIKEY
+      bscscan: BSCSCAN_APIKEY
   }
 };
