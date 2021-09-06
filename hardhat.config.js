@@ -38,7 +38,7 @@ module.exports = {
         chainId: 97,
         gasPrice: 20000000000,
         accounts: {
-            mnemonic: 'your testnet seed phrase'
+            mnemonic: ''
         },
       },
       bsc: {

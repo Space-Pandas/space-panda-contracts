@@ -20,7 +20,7 @@
 
 const homedir = require('os').homedir();
 const HDWalletProvider = require('@truffle/hdwallet-provider');
-const { PRIVATE_KEY, BSCSCAN_APIKEY } = require(`${homedir}/env.json`);
+const { PRIVATE_KEY, BSCSCAN_APIKEY, ETHERSCAN_APIKEY } = require(`${homedir}/env.json`);
 
 // const infuraKey = "fj4jll3k.....";
 //
@@ -58,13 +58,26 @@ module.exports = {
        production: true
      },
      bsc: {
-      provider: () => new HDWalletProvider(PRIVATE_KEY, `https://bsc-dataseed.binance.org/`),
-      network_id: 56,
-      timeoutBlocks: 200,
-      confirmations: 5,
-      production: true,
-      gas: 8500000
-    }
+       provider: () => new HDWalletProvider(PRIVATE_KEY, `https://bsc-dataseed.binance.org/`),
+       network_id: 56,
+       timeoutBlocks: 200,
+       confirmations: 5,
+       production: true,
+       gas: 8500000
+     },
+     rinkeby: {
+       provider: () => new HDWalletProvider(PRIVATE_KEY, `https://rinkeby.infura.io/v3/ea975af343d542ef892aae29624d167a`),
+       network_id: 4,
+       timeoutBlocks: 200,
+     },
+     main: {
+       provider: () => new HDWalletProvider(PRIVATE_KEY, `https://mainnet.infura.io/v3/ea975af343d542ef892aae29624d167a`),
+       network_id: 1,
+       timeoutBlocks: 200,
+       confirmations: 1,
+       production: true,
+       gas: 8500000
+     },
     // Another network with more advanced options...
     // advanced: {
     // port: 8777,             // Custom port
@@ -124,6 +137,7 @@ module.exports = {
 
   plugins: ["truffle-contract-size", "truffle-plugin-verify"],
   api_keys: {
-      bscscan: BSCSCAN_APIKEY
+    bscscan: BSCSCAN_APIKEY,
+    etherscan: ETHERSCAN_APIKEY,
   }
 };
