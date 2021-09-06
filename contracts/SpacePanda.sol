@@ -16,10 +16,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
 
     uint256 public constant MAX_SPECIAL_NFT_ROUND = 3;
     uint256 public constant SPECIAL_NFT_PRICE = 50 * (10 ** 18);
-    enum MintType { AIRDROP, COMMON, SPECIAL, AUCTION, CUSTOM }
-
-    // airdrop
-    uint256 public constant MAX_AIRDROP_NFT_SUPPLY = 500;
+    enum MintType { COMMON, SPECIAL, AUCTION }
 
     // common edition
     uint256 public constant MAX_COMMON_NFT_SUPPLY = 46120;
@@ -27,14 +24,11 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     // special edition
     uint256 public constant MAX_SPECIAL_NFT_SUPPLY = 366 * MAX_SPECIAL_NFT_ROUND;
 
-    // the number of space pandas on this planet. airdrop + common edition + special edition
-    uint256 public constant MAX_TOTAL_NFT_SUPPLY = 47718;
+    // the number of space pandas on this planet. common edition + special edition
+    uint256 public constant MAX_TOTAL_NFT_SUPPLY = 47218;
 
     // minter role for auction contract, game contract
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-
-    // governance role for space panda, this role will be from community
-    bytes32 public constant GOVERN_ROLE = keccak256("GOVERN_ROLE");
 
     bool public commonNftStart = false;
     bool public specialNftStart = false;
@@ -42,7 +36,6 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     // total three rounds for special edition auction
     uint256 public currentSpecialNftRound = 1;
     uint256 public nftIndex = 0;
-    uint256 public airDropNftCount = 0;
     uint256 public commonNftCount = 0;
     uint256 public specialNftCount = 0;
 
@@ -54,7 +47,6 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     constructor (string memory name, string memory symbol) ERC721(name, symbol) {
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
-        _setupRole(GOVERN_ROLE, _msgSender());
     }
 
     /**
@@ -108,16 +100,6 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     }
 
     /**
-    * @dev Airdrop Pandas
-    */
-    function mintAirDropNft(address to) public onlyOwner {
-        require(airDropNftCount < MAX_AIRDROP_NFT_SUPPLY, "Airdrop ended");
-
-        _mintNft(to, 1, MintType.AIRDROP);
-        airDropNftCount += 1;
-    }
-
-    /**
     * @dev Mint Auction Pandas
     */
     function mintAuctionNft(address to) public {
@@ -126,16 +108,6 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
 
         _mintNft(to, 1, MintType.AUCTION);
         specialNftCount += 1;
-    }
-
-    /**
-    * @dev Mint custom Pandas, should be used with burn
-    */
-    function mintCustomNft(address to) external {
-        require(totalSupply() < MAX_TOTAL_NFT_SUPPLY, "Exceeds max supply");
-        require(hasRole(MINTER_ROLE, msg.sender), "Invalid Caller");
-
-        _mintNft(to, 1, MintType.CUSTOM);
     }
 
     /**
