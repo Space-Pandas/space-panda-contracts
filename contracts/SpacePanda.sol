@@ -45,8 +45,6 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     uint256 public airDropNftCount = 0;
     uint256 public commonNftCount = 0;
     uint256 public specialNftCount = 0;
-    // in order to accept space pandas from other planets, the total capacity should be governed.
-    uint256 public maxCapacity = MAX_TOTAL_NFT_SUPPLY;
 
     event SpacePandaMinted(address dest, uint256 fromIndex, uint256 amount, MintType mintType);
 
@@ -65,19 +63,19 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     function getCommonNftPrice() public view returns (uint256) {
         uint currentSupply = commonNftCount;
         if (currentSupply < 30000) {
-            return 8 * (10 ** 16);  //  0 - 29999 0.08 BNB, total 30000
+            return 8 * (10 ** 16);  //  0 - 29999 0.08 ETH, total 30000
         } else if (currentSupply < 42000) {
-            return 12 * (10 ** 16);  //  30000 - 41999 0.12 BNB, total 12000
+            return 12 * (10 ** 16);  //  30000 - 41999 0.12 ETH, total 12000
         } else if (currentSupply < 45000) {
-            return 25 * (10 ** 16);  // 42000 - 44999 0.25 BNB, total 3000
+            return 25 * (10 ** 16);  // 42000 - 44999 0.25 ETH, total 3000
         } else if (currentSupply < 45800) {
-            return 6 * (10 ** 17);  //  45000 - 45799 0.6 BNB, total 800
+            return 6 * (10 ** 17);  //  45000 - 45799 0.6 ETH, total 800
         } else if (currentSupply < 46050) {
-            return 18 * (10 ** 17);  // 45800 - 46049 1.8 BNB, total 250
+            return 18 * (10 ** 17);  // 45800 - 46049 1.8 ETH, total 250
         } else if (currentSupply < 46110) {
-            return 8 * (10 ** 18);  //  46050 - 46109 8 BNB
+            return 8 * (10 ** 18);  //  46050 - 46109 8 ETH
         } else {
-            return 50 * (10 ** 18);  // 46109 - 46120 50 BNB
+            return 50 * (10 ** 18);  // 46109 - 46120 50 ETH
         }
     }
 
@@ -87,12 +85,6 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
         } else {
             commonNftStart = true;
         }
-    }
-
-    function setCapacity(uint256 capacity) public {
-        require(hasRole(GOVERN_ROLE, msg.sender), "Invalid caller");
-        require(capacity > MAX_TOTAL_NFT_SUPPLY, "Invalid capacity");
-        maxCapacity = capacity;
     }
 
     function setTokenURI(uint256 tokenId, string memory _tokenURI) public {
@@ -140,7 +132,7 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     * @dev Mint custom Pandas, should be used with burn
     */
     function mintCustomNft(address to) external {
-        require(totalSupply() < maxCapacity, "Exceeds max supply");
+        require(totalSupply() < MAX_TOTAL_NFT_SUPPLY, "Exceeds max supply");
         require(hasRole(MINTER_ROLE, msg.sender), "Invalid Caller");
 
         _mintNft(to, 1, MintType.CUSTOM);

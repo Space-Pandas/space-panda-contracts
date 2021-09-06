@@ -18,8 +18,8 @@
  *
  */
 
-const HDWalletProvider = require('@truffle/hdwallet-provider');
 const homedir = require('os').homedir();
+const HDWalletProvider = require('@truffle/hdwallet-provider');
 const { PRIVATE_KEY, BSCSCAN_APIKEY } = require(`${homedir}/env.json`);
 
 // const infuraKey = "fj4jll3k.....";
@@ -56,7 +56,15 @@ module.exports = {
        timeoutBlocks: 200,
        confirmations: 5,
        production: true
-     }
+     },
+     bsc: {
+      provider: () => new HDWalletProvider(PRIVATE_KEY, `https://bsc-dataseed.binance.org/`),
+      network_id: 56,
+      timeoutBlocks: 200,
+      confirmations: 5,
+      production: true,
+      gas: 8500000
+    }
     // Another network with more advanced options...
     // advanced: {
     // port: 8777,             // Custom port
