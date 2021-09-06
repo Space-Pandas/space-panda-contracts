@@ -33,6 +33,7 @@
     "hardhat": "^2.5.0",
     "hardhat-truffle5": "^1.0.1",
     "truffle": "^5.4.3",
-    "truffle-contract-size": "^2.0.1"
+    "truffle-contract-size": "^2.0.1",
+    "truffle-plugin-verify": "^0.5.14"
   }
 }

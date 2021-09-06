@@ -54,7 +54,7 @@ module.exports = {
        provider: () => new HDWalletProvider(PRIVATE_KEY, `https://data-seed-prebsc-1-s1.binance.org:8545`),
        network_id: 97,
        timeoutBlocks: 200,
-       confirmations: 5,
+       confirmations: 1,
        production: true
      },
      bsc: {
@@ -69,6 +69,8 @@ module.exports = {
        provider: () => new HDWalletProvider(PRIVATE_KEY, `https://rinkeby.infura.io/v3/ea975af343d542ef892aae29624d167a`),
        network_id: 4,
        timeoutBlocks: 200,
+       confirmations: 1,
+       skipDryRun: true
      },
      main: {
        provider: () => new HDWalletProvider(PRIVATE_KEY, `https://mainnet.infura.io/v3/ea975af343d542ef892aae29624d167a`),
