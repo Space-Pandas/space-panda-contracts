@@ -34,7 +34,7 @@ describe("space panda special tests", async function () {
   });
 
   it("test special price", async function () {
-    await this.panda.startBlindBox(true);
+    // await this.panda.startBlindBox(true);
     await printBalance();
     for(let i=1; i<25; i++) {
       await this.panda.mintSpecialNft(10, {

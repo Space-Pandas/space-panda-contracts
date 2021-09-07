@@ -34,7 +34,7 @@ describe("space panda common tests", async function () {
   });
 
   it("test common price", async function () {
-    await this.panda.startBlindBox(false);
+    // await this.panda.startBlindBox(false);
     // [1 - 30000] should be 0.08
     let price = await getCurrentPrice(this);
     expect(price).to.eq("0.08");

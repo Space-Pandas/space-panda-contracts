@@ -29,8 +29,6 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
 
     // minter role for auction contract, game contract
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
-
-    bool public commonNftStart = false;
     bool public specialNftStart = false;
 
     // total three rounds for special edition auction
@@ -68,14 +66,6 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
             return 8 * (10 ** 18);  //  46050 - 46109 8 ETH
         } else {
             return 50 * (10 ** 18);  // 46109 - 46120 50 ETH
-        }
-    }
-
-    function startBlindBox(bool isSpecial) public onlyOwner {
-        if (isSpecial) {
-            specialNftStart = true;
-        } else {
-            commonNftStart = true;
         }
     }
 
@@ -126,7 +116,6 @@ contract SpacePanda is ERC721, Ownable, AccessControl {
     * @dev Mints Common Pandas
     */
     function mintCommonNft(uint256 numberOfBoxes) public payable {
-        require(commonNftStart, "Not started");
         require(numberOfBoxes > 0 && numberOfBoxes <= 50, "Invalid size");
         require(commonNftCount.add(numberOfBoxes) <= MAX_COMMON_NFT_SUPPLY, "Exceeds max supply");
         require(getCommonNftPrice().mul(numberOfBoxes) == msg.value, "Invalid price");
