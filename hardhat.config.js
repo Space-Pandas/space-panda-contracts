@@ -1,5 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
+const homedir = require('os').homedir();
+const { PRIVATE_KEY, ETHERSCAN_APIKEY } = require(`${homedir}/env.json`);
 
 const privateKey = process.env.SPT_PRIVATE_KEY;
 const etherscanKey = process.env.SPT_ETHERSCAN_KEY;
@@ -39,22 +41,28 @@ module.exports = {
       bsc_testnet: {
         url: "https://data-seed-prebsc-2-s3.binance.org:8545/",
         chainId: 97,
-        gasPrice: 20000000000,
-        accounts: {
-            mnemonic: ''
-        },
+        accounts: [PRIVATE_KEY],
       },
       bsc: {
         url: "https://bsc-dataseed.binance.org/",
         chainId: 56,
+        accounts: [PRIVATE_KEY],
+      },
+      rinkeby: {
+        url: "https://rinkeby.infura.io/v3/ea975af343d542ef892aae29624d167a",
+        chainId: 4,
+        accounts: [PRIVATE_KEY],
         gasPrice: 20000000000,
-          accounts: {
-              mnemonic: ''
-          },
+      },
+      main: {
+        url: "https://mainnet.infura.io/v3/ea975af343d542ef892aae29624d167a",
+        chainId: 1,
+        accounts: [PRIVATE_KEY],
+        gasPrice: 20000000000,
       },
     },
   etherscan: {
-    apiKey: "V54Z9F24KD1ZBIHH9ME51HZJZWACS7K8HV"
+    apiKey: ETHERSCAN_APIKEY
   },
   mocha: {
     timeout: 60 * 3600 * 1000,
