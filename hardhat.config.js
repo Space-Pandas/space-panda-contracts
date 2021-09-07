@@ -3,9 +3,6 @@ require("@nomiclabs/hardhat-etherscan");
 const homedir = require('os').homedir();
 const { PRIVATE_KEY, ETHERSCAN_APIKEY } = require(`${homedir}/env.json`);
 
-const privateKey = process.env.SPT_PRIVATE_KEY;
-const etherscanKey = process.env.SPT_ETHERSCAN_KEY;
-
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
@@ -66,8 +63,5 @@ module.exports = {
   },
   mocha: {
     timeout: 60 * 3600 * 1000,
-  },
-  etherscan: {
-    apiKey: etherscanKey,
   },
 };
