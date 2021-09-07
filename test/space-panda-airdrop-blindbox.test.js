@@ -25,7 +25,7 @@ describe("space panda airdrop tests", async function () {
     this.panda = panda;
   });
 
-  it("test airdrop", async function () {
+  it.skip("test airdrop", async function () {
     await printBalance();
     const [, bob] = await ethers.getSigners();
     for(let i=1; i<501; i++) {

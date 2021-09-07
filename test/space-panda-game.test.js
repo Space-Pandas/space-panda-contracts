@@ -30,7 +30,7 @@ describe("space panda game tests", async function () {
     this.game = game;
   });
 
-  it("test panda update", async function () {
+  it.skip("test panda update", async function () {
     const [, bob] = await ethers.getSigners();
     await this.panda.mintAirDropNft(bob.address);
     await this.panda.connect(bob).approve(this.game.address, 0);

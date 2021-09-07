@@ -5,7 +5,9 @@ async function main() {
     console.log("Account balance:", (await deployer.getBalance()).toString());
 
     const Token = await ethers.getContractFactory("SpacePanda");
-    const token = await Token.deploy("SpacePanda", "SP");
+    const token = await Token.deploy("SpacePanda", "SP", {
+        nonce: 0,
+    });
 
     console.log("Token address:", token.address);
 }
