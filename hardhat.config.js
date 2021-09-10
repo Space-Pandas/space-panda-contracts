@@ -55,7 +55,7 @@ module.exports = {
         url: "https://mainnet.infura.io/v3/ea975af343d542ef892aae29624d167a",
         chainId: 1,
         accounts: [PRIVATE_KEY],
-        gasPrice: 20000000000,
+        gasPrice: 50000000000,
       },
     },
   etherscan: {
